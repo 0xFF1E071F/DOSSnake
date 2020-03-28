@@ -17,7 +17,7 @@ GetchAsync	proc	near
 		jz exit_getch ; No key pressed
 
 		mov	ah, INT16_READ_CHAR
-		int KEYBOARD_SERVICE
+		int 	KEYBOARD_SERVICE
 
 		exit_getch:
 			RET
@@ -31,49 +31,49 @@ GetchAsync	endp
 ;	ah - pressed char
 ;================================
 HandleMovements	proc	near
-	cmp ah, 4Bh
+	cmp	ah, 4Bh
 	je	turn_left
-	cmp ah, 4Dh
+	cmp	ah, 4Dh
 	je	turn_right
-	cmp ah, 48h
+	cmp	ah, 48h
 	je	turn_up
-	cmp ah, 50h
+	cmp	ah, 50h
 	je	turn_down
 	jmp	move
 
 	turn_left:
-		mov [edx].snake_direction, 0
+		mov	[edx].snake_direction, 0
 		jmp	move
 	turn_right:
-		mov [edx].snake_direction, 1
+		mov	[edx].snake_direction, 1
 		jmp	move
 	turn_up:
-		mov [edx].snake_direction, 2
+		mov	[edx].snake_direction, 2
 		jmp	move
 	turn_down:
-		mov [edx].snake_direction, 3
+		mov	[edx].snake_direction, 3
 
 	move:
-		cmp [edx].snake_direction, 0
-		jl exit_handle_mov
+		cmp	[edx].snake_direction, 0
+		jl	exit_handle_mov
 		je	@move_left
-		cmp [edx].snake_direction, 1
+		cmp	[edx].snake_direction, 1
 		je	@move_right
-		cmp [edx].snake_direction, 2
+		cmp	[edx].snake_direction, 2
 		je	@move_up
 		jg	@move_down
 
 		@move_left:
-			sub [esi].pos_x, VELOCITY_X
-			jmp exit_handle_mov
+			sub	[esi].pos_x, VELOCITY_X
+			jmp	exit_handle_mov
 		@move_right:
-			add [esi].pos_x, VELOCITY_X
-			jmp exit_handle_mov
+			add	[esi].pos_x, VELOCITY_X
+			jmp	exit_handle_mov
 		@move_up:
-			sub [esi].pos_y, VELOCITY_Y
-			jmp exit_handle_mov
+			sub	[esi].pos_y, VELOCITY_Y
+			jmp	exit_handle_mov
 		@move_down:
-			add [esi].pos_y, VELOCITY_Y
+			add	[esi].pos_y, VELOCITY_Y
 
 	exit_handle_mov:
 		ret
@@ -87,14 +87,14 @@ HandleMovements	endp
 ;	edx - Settings instance
 ;==========================================
 CheckCollision	proc	near
-	cmp [esi].pos_x, 0
-	jl collided
-	cmp [esi].pos_x, SCREEN_WIDTH - CELL_SIZE
-	jg collided
-	cmp [esi].pos_y, 0
-	jl collided
-	cmp [esi].pos_y, SCREEN_HEIGHT - CELL_SIZE
-	jg collided
+	cmp	[esi].pos_x, 0
+	jl	collided
+	cmp	[esi].pos_x, SCREEN_WIDTH - CELL_SIZE
+	jg	collided
+	cmp	[esi].pos_y, 0
+	jl	collided
+	cmp	[esi].pos_y, SCREEN_HEIGHT - CELL_SIZE
+	jg	collided
 	jmp	exit_check_collision
 
 	collided:
