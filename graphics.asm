@@ -1,6 +1,8 @@
 	.model small
 	.386
 	include Snake\const.inc
+	.data
+int_buffer db 6 dup(0)
 	
 	.code
 ;======================================
@@ -8,23 +10,40 @@
 ;======================================
 SetGraphics	proc	near
 	mov	ah, INT10_SET_MODE
-	mov	al,	12h ; 640x480 16 colors
+	mov	al, 13h ; 320x200 256 colors
 	int	VIDEO_SERVICE
 
 	mov	ah, INT10_SET_COLOR_PALETTE
-	xor	bh,	bh 
+	xor	bh, bh 
 	mov	bl, COLOR_CYAN ; Background color
 	int	VIDEO_SERVICE
 	ret	
 SetGraphics	endp
 
+;======================================
+; Procedure used to restore graphics
+;======================================
+RestoreGraphics	proc	near
+	mov	ah, INT10_SET_MODE
+	mov	al, 12h ; 640x480 16 colors
+	int	VIDEO_SERVICE
+	ret	
+RestoreGraphics	endp
+
 ClearScreen	proc	near
+	push	bx
+	push	dx
+
 	xor	al, al
+	xor	bx, bx
 	mov	ah, INT10_SCROLL_UP
 	xor	cx, cx
-	mov	dl, 0050h
-	mov	dh, 0050h
+	mov	dl, 0040h
+	mov	dh, 0040h
 	int	VIDEO_SERVICE
+
+	pop	dx
+	pop	bx
 	ret
 ClearScreen	endp
 
@@ -40,8 +59,8 @@ DrawCell	proc	near
 	push	dx
 
 	mov	cx, [esi].pos_x
-	mov	dx,	[esi].pos_y
-	mov	ah,	INT10_WRITE_PIXEL
+	mov	dx, [esi].pos_y
+	mov	ah, INT10_WRITE_PIXEL
 	mov	bh, 0 ; Page number
 
 	draw_loop:
@@ -52,7 +71,7 @@ DrawCell	proc	near
 		sub	cx, [esi].pos_x
 		cmp	cx, CELL_SIZE
 		pop	cx
-		jng	draw_loop
+		jnge	draw_loop
 
 		mov	cx, [esi].pos_x
 		inc	dx ; Switch to new line
@@ -61,7 +80,7 @@ DrawCell	proc	near
 		sub	dx, [esi].pos_y
 		cmp	dx, CELL_SIZE
 		pop	dx
-		jng	draw_loop
+		jnge	draw_loop
 	
 	pop	dx
 	pop	cx
@@ -70,7 +89,7 @@ DrawCell	proc	near
 DrawCell	endp
 
 ;=================================
-; Procedure to draw string
+; Procedure to draw a string
 ;
 ; Input: si - string adress
 ;	bl - color
@@ -80,13 +99,54 @@ DrawCell	endp
 DrawString	proc	near
 	xor	bh, bh
 	xor	al, al
-	mov	bp, si
+	mov bp, si
 	mov	ah, INT10_WRITE_STRING
-	call	StringLength
-	
+	call StringLength
 	int	VIDEO_SERVICE
 	ret
 DrawString	endp
+
+;=================================
+; Procedure to draw a score
+;
+; Input: ax - score
+;	bl - color
+;	dh - row position
+;   dl - column position
+;=================================
+DrawScore	proc	near
+	push	bx
+	push	dx
+	xor cx,cx
+	lea si, int_buffer
+	
+	select_loop:
+		mov dx, 0
+		mov bx, 10
+		div bx
+		push dx
+		inc cx
+		cmp ax, 0
+		jz to_str_loop
+		jmp select_loop
+		
+	to_str_loop:
+		cmp cx, 0
+		jz draw
+		dec cx
+		pop dx
+		add dl, '0'
+		mov [si], dl
+		inc si
+		jmp to_str_loop
+		
+	draw:
+		pop	dx
+		pop	bx
+		lea si, int_buffer
+		call DrawString
+		ret
+DrawScore	endp
 
 ;==================================
 ; Procedure to count string length
@@ -108,5 +168,5 @@ StringLength	proc	near
 		ret
 StringLength 	endp
 
-public	SetGraphics, DrawCell, DrawString, ClearScreen
+public	SetGraphics, RestoreGraphics, DrawCell, DrawString, DrawScore, ClearScreen
 end

@@ -5,17 +5,18 @@
 ;=================================================
 ;                    Constants
 ;=================================================
-SCREEN_WIDTH      = 640
-SCREEN_HEIGHT     = 480
+SCREEN_WIDTH      = 320
+SCREEN_HEIGHT     = 200
 SCREEN_RESOLUTION = SCREEN_WIDTH * SCREEN_HEIGHT
 
-CELL_SIZE  = 20 ; Width and height of one draw cell
-VELOCITY_X = 5
-VELOCITY_Y = 5 
+CELL_SIZE  = 10 ; Width and height of one draw cell
+VELOCITY_X = 10
+VELOCITY_Y = 10 
 
-COLOR_CYAN  = 0011b
-COLOR_RED   = 0100b
-COLOR_GREEN = 0010b
+COLOR_CYAN  = 00000011b
+COLOR_RED   = 00000100b
+COLOR_GREEN = 00001010b
+COLOR_PINK  = 00111110b
 
 VIDEO_SERVICE           = 10h
 INT10_SET_MODE          = 00h
@@ -30,6 +31,7 @@ INT16_KEY_STATUS        = 01h
 
 SYSTEM_SERVICE          = 21h
 INT21_GET_SYSTEM_TIME   = 2Ch
+INT21_EXIT_PROGRAM      = 4Ch
 
 
 ;=================================================
