@@ -3,6 +3,7 @@
 	include Snake\const.inc
 	.data
 int_buffer db 6 dup(0)
+saved_graphics_mode db 0
 	
 	.code
 ;======================================
@@ -20,14 +21,23 @@ SetGraphics	proc	near
 	ret	
 SetGraphics	endp
 
+;=========================================
+; Procedure used to save initial graphics
+;=========================================
+SaveGraphics	proc	near
+	mov	ah, INT10_GET_MODE
+	int	VIDEO_SERVICE
+	mov	[saved_graphics_mode], al
+SaveGraphics	endp
+
 ;======================================
 ; Procedure used to restore graphics
 ;======================================
 RestoreGraphics	proc	near
 	mov	ah, INT10_SET_MODE
-	mov	al, 12h ; 640x480 16 colors
+	mov	al, [saved_graphics_mode]
 	int	VIDEO_SERVICE
-	ret	
+	ret
 RestoreGraphics	endp
 
 ClearScreen	proc	near
@@ -99,9 +109,9 @@ DrawCell	endp
 DrawString	proc	near
 	xor	bh, bh
 	xor	al, al
-	mov bp, si
+	mov	bp, si
 	mov	ah, INT10_WRITE_STRING
-	call StringLength
+	call	StringLength
 	int	VIDEO_SERVICE
 	ret
 DrawString	endp
@@ -117,34 +127,34 @@ DrawString	endp
 DrawScore	proc	near
 	push	bx
 	push	dx
-	xor cx,cx
-	lea si, int_buffer
+	xor	cx,cx
+	lea	si, int_buffer
 	
 	select_loop:
-		mov dx, 0
-		mov bx, 10
-		div bx
-		push dx
-		inc cx
-		cmp ax, 0
-		jz to_str_loop
-		jmp select_loop
+		mov	dx, 0
+		mov	bx, 10
+		div	bx
+		push	dx
+		inc	cx
+		cmp	ax, 0
+		jz	to_str_loop
+		jmp	select_loop
 		
 	to_str_loop:
-		cmp cx, 0
-		jz draw
-		dec cx
-		pop dx
-		add dl, '0'
-		mov [si], dl
-		inc si
-		jmp to_str_loop
+		cmp	cx, 0
+		jz	draw
+		dec	cx
+		pop	dx
+		add	dl, '0'
+		mov	[si], dl
+		inc	si
+		jmp	to_str_loop
 		
 	draw:
 		pop	dx
 		pop	bx
-		lea si, int_buffer
-		call DrawString
+		lea	si, int_buffer
+		call	DrawString
 		ret
 DrawScore	endp
 
@@ -168,5 +178,5 @@ StringLength	proc	near
 		ret
 StringLength 	endp
 
-public	SetGraphics, RestoreGraphics, DrawCell, DrawString, DrawScore, ClearScreen
+public	SaveGraphics, SetGraphics, RestoreGraphics, DrawCell, DrawString, DrawScore, ClearScreen
 end

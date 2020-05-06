@@ -41,22 +41,22 @@ HandleMovements	proc	near
 	jmp	move
 
 	turn_left:
-		cmp [edx].snake_direction, 1 ; If going right
+		cmp	[edx].snake_direction, 1 ; If going right
 		je	move
 		mov	[edx].snake_direction, 0
 		jmp	move
 	turn_right:
-		cmp [edx].snake_direction, 0 ; If going left
+		cmp	[edx].snake_direction, 0 ; If going left
 		je	move
 		mov	[edx].snake_direction, 1
 		jmp	move
 	turn_up:
-		cmp [edx].snake_direction, 3 ; If going down
+		cmp	[edx].snake_direction, 3 ; If going down
 		je	move
 		mov	[edx].snake_direction, 2
 		jmp	move
 	turn_down:
-		cmp [edx].snake_direction, 2 ; If going up
+		cmp	[edx].snake_direction, 2 ; If going up
 		je	move
 		mov	[edx].snake_direction, 3
 
@@ -65,7 +65,7 @@ HandleMovements	proc	near
 		je	exit_handle_mov
 		
 		call ShiftSnakeCells
-		inc word ptr [ebx]
+		inc	word ptr [ebx]
 		cmp	[edx].snake_direction, 0
 		je	@move_left
 		cmp	[edx].snake_direction, 1
@@ -111,15 +111,15 @@ CheckCollisions	proc	near
 	jg	collided_wall
 	
 	mov	ax, [esi].pos_x
-	sub ax, [edi].pos_x
+	sub	ax, [edi].pos_x
 	cwd        ;
 	xor	ax, dx ; abs(ax)
 	sub	ax, dx ; 
-	cmp ax, CELL_SIZE
+	cmp	ax, CELL_SIZE
 	jge	check_body_collision
 
 	mov	ax, [esi].pos_y
-	sub ax, [edi].pos_y
+	sub	ax, [edi].pos_y
 	cwd        ;
 	xor	ax, dx ; abs(ax)
 	sub	ax, dx ; 
@@ -130,24 +130,26 @@ CheckCollisions	proc	near
 
 	check_body_collision:
 		push	edi
-		mov edi, esi
-		call CheckSnakeCollision
+		mov	edi, esi
+		call	CheckSnakeCollision
 		cmp	ax, 1
 		je	collided_itself
 		pop	edi
-		jmp exit_check_collision
+		jmp	exit_check_collision
 
 	collided_itself:
 		pop	edi
 	collided_wall:
-		mov [edx].game_ended, 1
+		pop	edx
+		mov	[edx].game_ended, 1
+		push	edx
 		jmp	exit_check_collision
 	collided_food:
 		pop	edx
 		inc	[edx].score
 		push	edx
-		inc word ptr [ebx]
-		call GenerateApple
+		inc	word ptr [ebx]
+		call	GenerateApple
 		jmp	exit_check_collision
 
 	exit_check_collision:
@@ -155,10 +157,44 @@ CheckCollisions	proc	near
 		ret
 CheckCollisions	endp
 
+;==========================================
+; Resets all game data
+;
+; Input: esi - adress of snake head
+;	edi - apple adress
+;	ebx - snake tail
+;	edx - Settings instance
+;==========================================
+ResetAllData	proc	near
+	; Settings
+	mov	[edx].score, 0
+	mov	[edx].game_ended, 0
+	mov	[edx].snake_direction, -1
+
+	; Apple
+	mov	[edi].pos_x, 10
+	mov	[edi].pos_y, 10
+
+	;Snake tail
+	mov	[ebx], 2 
+
+	snake_clear_loop:
+		cmp	[esi].pos_x, 0
+		je	exit_reset
+
+		mov	[esi].pos_x, 0
+		mov	[esi].pos_y, 0
+		add	esi, (type Cell)
+		jmp	snake_clear_loop
+
+	exit_reset:
+		ret
+ResetAllData	endp
+
 InitializeRandom	proc	near
-	mov    	Ah, 00h   ; interrupt to get system timer in CX:DX 
-	int   	1Ah
-	mov    	[random_seed], dx
+	mov	Ah, 00h ; Interrupt to get system timer
+	int	1Ah
+	mov	[random_seed], dx
 	ret
 InitializeRandom	endp
 
@@ -183,29 +219,29 @@ CheckSnakeCollision	proc	near
 		add	esi, (type Cell)
 		dec	cx
 
-		cmp cx, 0
+		cmp	cx, 0
 		jz	not_collided
 
 		mov	ax, [esi].pos_x
-		sub ax, [edi].pos_x
+		sub	ax, [edi].pos_x
 		cwd        ;
 		xor	ax, dx ; abs(ax)
 		sub	ax, dx ; 
-		cmp ax, CELL_SIZE
-		jge check_loop
+		cmp	ax, CELL_SIZE
+		jge	check_loop
 
 		mov	ax, [esi].pos_y
-		sub ax, [edi].pos_y
+		sub	ax, [edi].pos_y
 		cwd        ;
 		xor	ax, dx ; abs(ax)
 		sub	ax, dx ; 
 		
-		cmp ax, CELL_SIZE - 1
+		cmp	ax, CELL_SIZE - 1
 		jl	collided
-		jg check_loop
+		jg	check_loop
 
 	collided:
-		mov ax, 1
+		mov	ax, 1
 		jmp	exit_check_snake_collision
 	not_collided:
 		xor	ax, ax
@@ -237,10 +273,10 @@ GenerateApple	proc	near
 	push	edx
 
 	randomize_loop:
-		mov cx, SCREEN_WIDTH - CELL_SIZE
+		mov	cx, SCREEN_WIDTH - CELL_SIZE
 		call	Randomize
-		mov bx, dx
-		mov cx, SCREEN_HEIGHT - CELL_SIZE
+		mov	bx, dx
+		mov	cx, SCREEN_HEIGHT - CELL_SIZE
 		call	Randomize
 
 		mov	[edi].pos_x, bx
@@ -262,26 +298,26 @@ ShiftSnakeCells	proc	near
 
 	mov	edi,	esi
 	xor	eax, eax
-	mov ax, [ebx]
-	imul ax, (type Cell)
+	mov	ax, [ebx]
+	imul	ax, (type Cell)
 	add	edi,	eax
 
 	shift_loop:
 		mov	ax, [edi-(type Cell)].pos_x
-		mov [edi].pos_x, ax
+		mov	[edi].pos_x, ax
 		mov	ax, [edi-(type Cell)].pos_y
-		mov [edi].pos_y, ax
+		mov	[edi].pos_y, ax
 
-		sub edi, (type Cell)
+		sub	edi, (type Cell)
 		cmp	edi, esi
-		jg shift_loop
+		jg	shift_loop
 
-	dec word ptr [ebx] ; Removing tail
+	dec	word ptr [ebx] ; Removing tail
 	pop	edi
 	pop	eax
 	ret
 ShiftSnakeCells	endp
 
 
-public GetchAsync, HandleMovements, CheckCollisions, InitializeRandom
+public GetchAsync, HandleMovements, CheckCollisions, InitializeRandom, ResetAllData
 end
