@@ -129,6 +129,8 @@ DrawScore	proc	near
 	push	dx
 	xor	cx,cx
 	lea	si, int_buffer
+
+	mov	[si], "" ; Clearing buffer
 	
 	select_loop:
 		mov	dx, 0
