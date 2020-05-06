@@ -1,6 +1,6 @@
 	.model small
 	.386
-	include Snake\const.inc
+	include DOSSnake\const.inc
 	.data
 random_seed dw 0
 
