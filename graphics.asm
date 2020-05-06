@@ -1,6 +1,6 @@
 	.model small
 	.386
-	include Snake\const.inc
+	include DOSSnake\const.inc
 	.data
 int_buffer db 6 dup(0)
 saved_graphics_mode db 0
