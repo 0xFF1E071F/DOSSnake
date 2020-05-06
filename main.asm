@@ -1,7 +1,7 @@
 	.model small
 	.386
 	.stack	200h
-	include Snake\const.inc
+	include DOSSnake\const.inc
 	
 	.data
 MsgStart	db "Use arrow keys to move the snake", 0
