@@ -1,7 +1,7 @@
 @echo off
 cls
 
-set folder=Snake\
+set folder=DOSSnake\
 set file_name1=main
 set file_name2=graphics
 set file_name3=logic
